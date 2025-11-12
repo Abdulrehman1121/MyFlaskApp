@@ -7,7 +7,12 @@ app = Flask(__name__, template_folder='templates')
 
 # Load model with absolute path
 model_path = os.path.join(os.path.dirname(__file__), 'model.pkl')
-model = pickle.load(open(model_path, "rb"))
+try:
+    with open(model_path, "rb") as model_file:
+        model = pickle.load(model_file)
+except Exception as load_error:
+    print(f"Error loading model: {load_error}")
+    model = None
 
 @app.route("/", methods=["GET", "POST"])
 def home():
@@ -22,7 +27,7 @@ def home():
             output = model.predict(features)[0]
             return render_template("index.html", prediction_text=f"The Flower Name is {output}")
         except Exception as e:
-            return render_template("index.html", prediction_text=f"Error: {e}")
+            return render_template("index.html", prediction_text=f"Error: {str(e)}")
     else:
         # GET request
         return render_template("index.html")
